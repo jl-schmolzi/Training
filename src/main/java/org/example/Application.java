@@ -4,11 +4,13 @@ import java.io.*;
 import java.math.BigInteger;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.sql.SQLOutput;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.time.format.TextStyle;
 import java.util.*;
+import java.util.stream.Collectors;
 
 class HeroYearComparator2 implements Comparator<Heroes.Hero> {
 
@@ -178,49 +180,144 @@ public class Application {
         System.out.println(testTimeStrings("yesterday"));
         System.out.println(testTimeStrings("1 day ago"));
         System.out.println(testTimeStrings("2234 days ago"));
-        double[] numbers = { -199.99 };
-        System.out.println( detectRoundingMode( numbers, -200 ) );
+        double[] numbers = {-199.99};
+        System.out.println(detectRoundingMode(numbers, -200));
         System.out.println(completeNumber(123, 22, 989, 77, 9));
         System.out.println();
 
         String baseName = "Hi";
-        try
-        {
-            ResourceBundle bundle = ResourceBundle.getBundle( baseName );
-            System.out.println( bundle.getString("Hello") );
+        try {
+            ResourceBundle bundle = ResourceBundle.getBundle(baseName);
+            System.out.println(bundle.getString("Hello"));
+        } catch (MissingResourceException e) {
+            System.err.println(e);
         }
-        catch ( MissingResourceException e ) {
-            System.err.println( e );
+//        Collection<String> strings1 = readWords();
+//        System.out.println(wordList( "wristwatches" , strings1));
+//        System.out.println(wordList( "abibliophobia" , strings1));
+        Receipt receipt = new Receipt();
+        receipt.addItem(new Receipt.Item("Peanuts", 222));
+        receipt.addItem(new Receipt.Item("Lightsaber", 19999));
+        receipt.addItem(new Receipt.Item("Peanuts", 222));
+        receipt.addItem(new Receipt.Item("Log book", 1000));
+        receipt.addItem(new Receipt.Item("Peanuts", 222));
+        System.out.println(receipt);
+
+        String[] words = {
+                "Baby Shark", "Corona", "Baby Yoda", "Corona", "Baby Yoda", "Tiger King",
+                "David Bowie", "Kylie Jenner", "Kardashian", "Love Island", "Bachelorette",
+                "Baby Yoda", "Tiger King", "Billie Eilish", "Corona"
+        };
+        System.out.println(importantGossip(words));
+
+        NavigableMap<LocalDate, String> dates = new TreeMap<>();
+        dates.put(LocalDate.of(2023, 12, 26), "2. Weihnachtsfeiertag");
+        dates.put(LocalDate.of(2023, 5, 1), "Tag der Arbeit");
+        dates.put(LocalDate.of(2023, 12, 24), "Heiligabend");
+        dates.put(LocalDate.of(2023, 12, 25), "1. Weihnachtsfeiertag");
+        dates.put(LocalDate.of(2023, 1, 1), "Neujahr");
+        dates.put(LocalDate.of(2022, 12, 31), "Silvester");
+        System.out.println(dates);
+        System.out.println(dates.firstEntry());
+        System.out.println(dates.lastEntry());
+        System.out.println(dates.higherEntry(LocalDate.of(2023, 1, 6)));
+        SortedMap<LocalDate, String> x = dates.subMap(LocalDate.of(2022, 12, 25), LocalDate.of(2023, 1, 7));
+        System.out.println(x);
+        System.out.println(dates);
+//        dates.remove(LocalDate.of(2022, 12, 31));
+//        System.out.println(dates);
+//        Set<LocalDate> localDates = x.keySet();
+//        System.out.println(localDates);
+//        for (LocalDate value : localDates) {
+//            dates.remove(value);
+//        }
+//        System.out.println(dates);
+//        System.out.println(dates.keySet().removeAll(x.keySet()));
+        List<String> names = new ArrayList<>();
+        Collections.addAll(names, "", "", "Sonny", "Crockett", "Burnett",
+                "Ricardo", "", "Rico", "Tubbs", "Ricardo", "Cooper", "");
+
+//        for ( String name : names )
+//            if ( "".equals( name ) )
+//                names.remove( name );
+//        for(int i = 0; i < names.size(); i++){
+//            if ( "".equals( names.get(i) ) )
+//                names.remove( i );
+//        }
+//        System.out.println(names);
+        Heroes.ALL.stream().forEach(h -> System.out.println(h.toString()));
+        System.out.println(Heroes.ALL.stream().allMatch(h -> h.yearFirstAppearance > 1900));
+        System.out.println(Heroes.ALL.stream().anyMatch(h -> h.sex == Heroes.Hero.Sex.FEMALE && h.yearFirstAppearance >= 1950));
+        System.out.println(Heroes.ALL.stream().min(Comparator.comparingInt(h -> h.yearFirstAppearance)));
+        System.out.println(Heroes.ALL.stream().min(Comparator.comparingInt(h -> Math.abs(h.yearFirstAppearance - 1960))));
+        StringBuilder years = new StringBuilder();
+        Heroes.ALL.stream().forEach(h -> years.append(String.format("%d, ", h.yearFirstAppearance)));
+        System.out.println(years);
+        System.out.println(Heroes.ALL.stream().collect(StringBuilder::new, (sb, h) -> sb.append(h.yearFirstAppearance + ", "),
+                StringBuilder::append).toString());
+        Map<Heroes.Hero.Sex, List<Heroes.Hero>> heroSet = new HashMap<>();
+        heroSet = Heroes.ALL.stream().collect(Collectors.groupingBy(h -> h.sex));
+        System.out.println(heroSet);
+        Map<Boolean, List<Heroes.Hero>> heroSet2 = new HashMap<>();
+        heroSet2 = Heroes.ALL.stream().collect(Collectors.groupingBy(h -> h.yearFirstAppearance >= 1970));
+        System.out.println(heroSet2);
+        System.out.println(Heroes.ALL.stream().filter(h -> h.sex == Heroes.Hero.Sex.FEMALE).count());
+        Heroes.ALL.stream().sorted(Comparator.comparingInt(h -> h.yearFirstAppearance)).forEach(System.out::println);
+        StringBuilder femHeroes = Heroes.ALL.stream().filter(h -> h.sex == Heroes.Hero.Sex.FEMALE).collect(
+                StringBuilder::new,
+                ( sb, hero ) -> sb.append( sb.isEmpty() ? "" : "," )
+                        .append( hero.name ),
+                ( sb1, sb2 ) -> sb1.append( sb2.isEmpty() ? "" : "," + sb2 ).toString()) ;
+        System.out.println(femHeroes);
+        Heroes.ALL.stream().map( h -> new Heroes.Hero(h.name.replaceAll("\\(.*\\)", "") , h.sex, h.yearFirstAppearance)).forEach(System.out::println);
+        System.out.println(Arrays.toString(Heroes.ALL.stream().map(h -> h.yearFirstAppearance).distinct().toArray()));
+        Heroes.UNIVERSES.stream().flatMap(Heroes.Universe::heroes).forEach(h -> System.out.println(h.name));
+        String[] chosenNames = { "Anne", "Captain CiaoCiao", "Balico", "Charles", "Anne", "CiaoCiao", "CiaoCiao", "Drake", "Anne", "Balico", "CiaoCiao" };
+        System.out.println(names.stream().map(h -> (h.equals("Captain CiaoCiao") ? "CiaoCiao".toLowerCase() : h.toLowerCase()))
+                .collect(Collectors.groupingBy(h -> h, Collectors.counting())));
+    }
+
+    static List<String> importantGossip(String... words) {
+        Map<String, Integer> wordMap = new HashMap<>();
+        for (String word : words) {
+//            wordMap.computeIfPresent(word, (k, v) -> v + 1);
+//            wordMap.putIfAbsent(word, 1);
+//            wordMap.merge(word, 1, (ov, v) -> ov + v );
+            wordMap.merge(word, 1, Integer::sum);
         }
-        Collection<String> strings1 = readWords();
-        System.out.println(wordList( "wristwatches" , strings1));
-        System.out.println(wordList( "abibliophobia" , strings1));
+        System.out.println(wordMap);
+        List<String> ret = new ArrayList<>(wordMap.keySet());
+        ret.sort((s1, s2) -> wordMap.get(s2).compareTo(wordMap.get(s1)));
+        System.out.println(ret);
+        return ret.subList(0, 5);
     }
 
     static Collection<String> wordList(String string, Collection<String> words) throws IOException {
-        Collection<String> ret = new HashSet<>( words);
+        Collection<String> ret = new HashSet<>(words);
         String testString = string.toLowerCase();
         ret.removeIf(s -> s.length() < 3);
-        ret.removeIf( s -> !testString.contains(s));
+        ret.removeIf(s -> !testString.contains(s));
         return ret;
     }
+
     private static Collection<String> readWords() throws IOException {
         String WORD_LIST_URL =
                 // "https://raw.githubusercontent.com/creativecouple/all-the-german-words/master/corpus/de.txt";
                 "https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt";
-        URL url = new URL( WORD_LIST_URL ); //    370.000 words
-        Collection<String> words = new HashSet<>( 500_000 );
-        try ( InputStream is = url.openStream() ) {
-            new Scanner( is ).forEachRemaining( s -> words.add( s.toLowerCase() ) );
+        URL url = new URL(WORD_LIST_URL); //    370.000 words
+        Collection<String> words = new HashSet<>(500_000);
+        try (InputStream is = url.openStream()) {
+            new Scanner(is).forEachRemaining(s -> words.add(s.toLowerCase()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return words;
     }
+
     private static BigInteger completeNumber(int... parts) {
         BigInteger ret = BigInteger.valueOf(0);
         for (int part : parts) {
-            if(part >= 100){
+            if (part >= 100) {
                 ret = ret.multiply(BigInteger.valueOf(10));
                 ret = ret.add(BigInteger.valueOf(part / 100));
                 part = part % 100;
@@ -229,13 +326,13 @@ public class Application {
                 ret = ret.multiply(BigInteger.valueOf(10));
                 part = part % 10;
                 ret = ret.add(BigInteger.valueOf(part));
-            }else if(part >= 10){
+            } else if (part >= 10) {
                 ret = ret.multiply(BigInteger.valueOf(10));
                 ret = ret.add(BigInteger.valueOf(part / 10));
                 ret = ret.multiply(BigInteger.valueOf(10));
                 part = part % 10;
                 ret = ret.add(BigInteger.valueOf(part));
-            }else {
+            } else {
                 ret = ret.multiply(BigInteger.valueOf(10));
                 ret = ret.add(BigInteger.valueOf(part));
             }
@@ -268,10 +365,10 @@ public class Application {
     }
 
     private static LocalDate testTimeStrings(String s) {
-        if(s.contains("-")){
+        if (s.contains("-")) {
             DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-d");
             return LocalDate.parse(s, format);
-        }else if(s.contains("/")){
+        } else if (s.contains("/")) {
             try {
                 DateTimeFormatter format = DateTimeFormatter.ofPattern("d/M/yyyy");
                 return LocalDate.parse(s, format);
@@ -279,23 +376,23 @@ public class Application {
                 DateTimeFormatter format = DateTimeFormatter.ofPattern("d/M/yy");
                 return LocalDate.parse(s, format);
             }
-        }else if(s.equals("tomorrow")){
+        } else if (s.equals("tomorrow")) {
             LocalDate date = LocalDate.now();
             date = date.plusDays(1);
             return date;
-        }else if(s.equals("today")){
+        } else if (s.equals("today")) {
             LocalDate date = LocalDate.now();
             return date;
-        }else if(s.equals("yesterday")){
+        } else if (s.equals("yesterday")) {
             LocalDate date = LocalDate.now();
             date = date.minusDays(1);
             return date;
-        }else if(s.contains("ago")){
+        } else if (s.contains("ago")) {
             int days = Integer.valueOf(s.split(" ")[0]);
             LocalDate date = LocalDate.now();
             date = date.minusDays(days);
             return date;
-        }else{
+        } else {
             System.out.println("illegal pattern");
             return null;
         }
@@ -314,7 +411,7 @@ public class Application {
             String start = startAndEnd[0];
             String end = startAndEnd[1];
             DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd, HH:mm");
-            LocalDateTime  startD = LocalDateTime.from(LocalDateTime.parse(start, format));
+            LocalDateTime startD = LocalDateTime.from(LocalDateTime.parse(start, format));
             LocalDateTime endD = LocalDateTime.from(LocalDateTime.parse(end, format));
             Duration duration = Duration.between(startD, endD);
             sum = sum.plus(duration);
