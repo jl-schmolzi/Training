@@ -275,6 +275,7 @@ public class Application {
         String[] chosenNames = { "Anne", "Captain CiaoCiao", "Balico", "Charles", "Anne", "CiaoCiao", "CiaoCiao", "Drake", "Anne", "Balico", "CiaoCiao" };
         System.out.println(names.stream().map(h -> (h.equals("Captain CiaoCiao") ? "CiaoCiao".toLowerCase() : h.toLowerCase()))
                 .collect(Collectors.groupingBy(h -> h, Collectors.counting())));
+        System.out.println("Hi");
     }
 
     static List<String> importantGossip(String... words) {
